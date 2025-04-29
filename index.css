@@ -1,0 +1,33 @@
+html, body, #root {
+    height: 100%;
+    margin: 0;
+  }
+  
+body {
+    display: flex;
+    flex-direction: column;
+  }
+
+.formContainer .form-control {
+    background-color: #D2C8C8;
+    border: 1px solid #ccc;
+}
+
+.login-button {
+    background-color: #D2C8C8 !important;
+    border: none !important;
+    color: black !important;
+    transition: background-color 0.3s ease;
+  }
+  
+  .login-button:enabled:hover {
+    background-color: #bfb3b3 !important;
+  }
+  
+  .login-button:disabled {
+    background-color: #e5e0e0 !important;
+    cursor: not-allowed;
+  }
+  
+
+  
