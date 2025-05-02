@@ -1,5 +1,6 @@
 {
   "name": "csci-201-project",
+  "proxy": "http://localhost:8080",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -10,6 +11,7 @@
     "boring-avatars": "^1.11.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.503.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -1,7 +1,23 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import { useEffect } from 'react';
 
 export default function Login() {
+
+  useEffect(() => {
+    const loggedIn = Cookies.get('loggedIn');
+    if (loggedIn) {
+      console.log('User is already logged in');
+      // Redirect to home page or any other page
+      alert('You are already logged in');
+      navigate('/');
+    } else {
+      console.log('User is not logged in');
+    }
+  }, []);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,13 +39,36 @@ export default function Login() {
     setError(null);
 
     try {
-      // This will be replaced with actual API call later
       console.log('Login data:', formData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect would happen here after successful login
+      // API call
+      const response = await fetch('/CSCI201Project/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.email,
+          password: formData.password,
+        }),
+      });
+      console.log(response);
+      const data = await response.json();
+      if (data.status !== 'success') {
+        console.error('Login failed:', data);
+        const reset = {
+          email: formData.email,
+          password: '',
+        }
+        setFormData(reset);
+        throw new Error('Error logging in');
+      }
+      console.log('Login successful:', data);
+      Cookies.set('loggedIn', 'true', { expires: 1 });  
+      Cookies.set('userEmail', formData.email, { expires: 1 }); 
+
+      navigate('/');
+
       setIsLoading(false);
     } catch (err) {
       setError('Failed to login. Please check your credentials.');
