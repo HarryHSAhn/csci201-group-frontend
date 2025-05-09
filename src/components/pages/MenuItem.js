@@ -1,86 +1,212 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import "../css/searchitem.css";
 
-export default function MenuItem() {
-  const { foodName } = useParams();
-  const [foodItem, setFoodItem] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+const initialKeywords = [
+  "McCarthy",
+  "Parkside",
+  "EVK",
+  "Dairy",
+  "Eggs",
+  "Fish",
+  "Food Not Analyzed for Allergens",
+  "Halal Ingredients",
+  "Peanuts",
+  "Pork",
+  "Sesame",
+  "Shellfish",
+  "Soy",
+  "Tree Nuts",
+  "Vegan",
+  "Vegetarian",
+  "Wheat / Gluten",
+];
+
+const allergensList = [
+  "Dairy",
+  "Eggs",
+  "Fish",
+  "Food Not Analyzed for Allergens",
+  "Halal Ingredients",
+  "Peanuts",
+  "Pork",
+  "Sesame",
+  "Shellfish",
+  "Soy",
+  "Tree Nuts",
+  "Vegan",
+  "Vegetarian",
+  "Wheat / Gluten",
+];
+
+const diningHallsList = ["McCarthy", "Parkside", "EVK"];
+const sortOptions = [];
+
+export default function Searchitem() {
+  const [keywords, setKeywords] = useState(
+    initialKeywords.map((k) => ({ text: k, active: false }))
+  );
+  const [searchText, setSearchText] = useState("");
+  const [diningHall, setDiningHall] = useState([]);
+  const [allergen, setAllergen] = useState([]);
+  const [sortLabel, setSortLabel] = useState("");
+  const [results, setResults] = useState([]);
+
+  const handleKeywordClick = (text) => {
+    console.log("Keyword clicked:", text);
+    setKeywords((prev) =>
+      prev.map((k) => (k.text === text ? { ...k, active: !k.active } : k))
+    );
+
+    if (diningHallsList.includes(text)) {
+      setDiningHall((prev) =>
+        prev.includes(text) ? prev.filter((k) => k !== text) : [...prev, text]
+      );
+    } else if (allergensList.includes(text)) {
+      setAllergen((prev) =>
+        prev.includes(text) ? prev.filter((k) => k !== text) : [...prev, text]
+      );
+    }
+  };
+
+  const handleRemoveKeyword = (text) => {
+    setKeywords((prev) =>
+      prev.map((k) => (k.text === text ? { ...k, active: false } : k))
+    );
+    setDiningHall((prev) => prev.filter((k) => k !== text));
+    setAllergen((prev) => prev.filter((k) => k !== text));
+  };
+
+  const handleSortClick = (label) => {
+    setSortLabel((prev) => (prev === label ? "" : label));
+  };
+
+  const fetchData = useCallback(async () => {
+    console.log("fetchData() entered");
+    try {
+      const params = new URLSearchParams();
+      diningHall.forEach((h) => params.append("DiningHall", h));
+      allergen.forEach((a) => params.append("allergens", a));
+      if (searchText.trim() !== "") {
+        params.append("search", searchText.trim());
+      }
+
+      const query = params.toString();
+      console.log("Query:", query);
+
+      const response = await fetch(
+        `http://localhost:8080/CSCI201Project/searchServlet?${query}`
+      );
+      const json = await response.json();
+      console.log("Response:", json);
+
+      setResults(Array.isArray(json) ? json : [json]);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  }, [diningHall, allergen, searchText]);
 
   useEffect(() => {
-    const baseUrl = "http://localhost:8080/CSCI201Project/searchServlet";
+    fetchData();
+  }, [fetchData]);
 
-    const queryParams = new URLSearchParams({ search: foodName });
+  const handleSearchInput = (e) => {
+    setSearchText(e.target.value);
+  };
 
-    fetch(`${baseUrl}?${queryParams.toString()}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Server error");
-        return res.json();
-      })
-      .then((data) => {
-        if (!Array.isArray(data) || data.length === 0) {
-          setError("No results found.");
-          setLoading(false);
-          return;
-        }
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      fetchData();
+    }
+  };
 
-        const firstItem = data[0];
-        setFoodItem(firstItem.foodItem);
-
-        const matchingReviews = data
-          .filter(
-            (item) =>
-              item.foodItem?.name === firstItem.foodItem.name &&
-              item.review?.ratingDescription
-          )
-          .map((item) => item.review);
-
-        setReviews(matchingReviews);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError("Could not fetch data from server.");
-        setLoading(false);
-      });
-  }, [foodName]);
-
-  if (loading) return <h2>Loading...</h2>;
-  if (error) return <h2 style={{ color: "red" }}>{error}</h2>;
+  const sortedKeywords = [...keywords].sort((a, b) => b.active - a.active);
 
   return (
-    <>
-      <div style={{ fontFamily: "Arial", margin: "30px" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <h2>{foodItem.name}</h2>
-          <p>Rating: {foodItem.avgRating}</p>
-          <p>{foodItem.diningHall}</p>
-        </div>
-
-        <div style={{ borderTop: "1px solid black", margin: "30px 0" }}></div>
-
-        <div>
-          {reviews.map((review, index) => (
-            <div key={index} style={{ marginBottom: "30px" }}>
-              <div style={{ fontWeight: "bold", marginBottom: "10px" }}>
-                Review {index + 1}
-              </div>
+    <div>
+      <div className="container">
+        {/* Sidebar */}
+        <div className="sidebar">
+          <h4>Keywords</h4>
+          <div className="keywords">
+            {sortedKeywords.map((keyword) => (
               <div
-                style={{
-                  backgroundColor: "#888",
-                  color: "#fff",
-                  padding: "12px",
-                  textAlign: "center",
+                key={keyword.text}
+                className={`keyword ${keyword.active ? "active" : ""}`}
+                onClick={() => handleKeywordClick(keyword.text)}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveKeyword(keyword.text);
                 }}
               >
-                {review.ratingDescription}
+                <span>{keyword.text}</span>
+                {keyword.active && (
+                  <button
+                    className="remove-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveKeyword(keyword.text);
+                    }}
+                  >
+                    &times;
+                  </button>
+                )}
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Main content */}
+        <div className="main">
+          <div className="top-controls">
+            <input
+              className="search-box"
+              type="text"
+              placeholder="Search"
+              value={searchText}
+              onChange={handleSearchInput}
+              onKeyDown={handleSearchKeyPress}
+              autoComplete="off"
+            />
+            <div className="sort-buttons">
+              {sortOptions.map((option) => (
+                <button
+                  key={option}
+                  className={`sort-button ${
+                    sortLabel === option ? "active" : ""
+                  }`}
+                  onClick={() => handleSortClick(option)}
+                >
+                  {sortLabel === option ? `✓ ${option}` : option}
+                </button>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Results grid */}
+          <div className="grid">
+            {results.length > 0
+              ? results.map((item, i) => (
+                  // <div key={i} className="item-card">
+                  //   <strong>{item.foodItem.name}</strong>
+                  //   <br />
+                  //   Rating: {item.review.numericalRating.toFixed(1)}
+                  // </div>
+                  <Link
+                    key={i}
+                    to={`/menu-item/${encodeURIComponent(item.foodItem.name)}`}
+                    className="item-card"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <strong>{item.foodItem.name}</strong>
+                    <br />
+                    Rating: {item.review.numericalRating.toFixed(1)}
+                  </Link>
+                ))
+              : null}
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
-
-//export default MenuItem;
