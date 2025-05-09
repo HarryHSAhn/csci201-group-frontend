@@ -1,100 +1,88 @@
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import Taskbar from "../components/Taskbar";
+
 function MenuItem() {
+  const { foodName } = useParams();
+  const [foodItem, setFoodItem] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const baseUrl = "http://localhost:8080/CSCI201Project/searchServlet";
+
+    const queryParams = new URLSearchParams({ search: foodName });
+
+    fetch(`${baseUrl}?${queryParams.toString()}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Server error");
+        return res.json();
+      })
+      .then((data) => {
+        if (!Array.isArray(data) || data.length === 0) {
+          setError("No results found.");
+          setLoading(false);
+          return;
+        }
+
+        const firstItem = data[0];
+        setFoodItem(firstItem.foodItem);
+
+        const matchingReviews = data
+          .filter(
+            (item) =>
+              item.foodItem?.name === firstItem.foodItem.name &&
+              item.review?.ratingDescription
+          )
+          .map((item) => item.review);
+
+        setReviews(matchingReviews);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError("Could not fetch data from server.");
+        setLoading(false);
+      });
+  }, [foodName]);
+
+  if (loading) return <h2>Loading...</h2>;
+  if (error) return <h2 style={{ color: "red" }}>{error}</h2>;
+
   return (
     <>
       <Taskbar />
-      <div style={{ fontFamily: "Arial, sans-serif", margin: "20px" }}>
-        <div
-          className="food-info"
-          style={{ textAlign: "center", marginBottom: "20px" }}
-        >
-          <h2 id="foodName">Food Item Name</h2>
-          <p id="foodRating">Food Item Rating</p>
-          <p id="foodDiningHall">Food Item Dining Hall</p>
+      <div style={{ fontFamily: "Arial", margin: "30px" }}>
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <h2>{foodItem.name}</h2>
+          <p>Rating: {foodItem.avgRating}</p>
+          <p>{foodItem.diningHall}</p>
         </div>
 
-        <div
-          className="divider"
-          style={{ borderTop: "1px solid #000", margin: "20px 0" }}
-        ></div>
+        <div style={{ borderTop: "1px solid black", margin: "30px 0" }}></div>
 
-        <div id="reviewsContainer">
-          <div className="review" style={{ marginBottom: "20px" }}>
-            <div
-              className="review-title"
-              style={{ fontWeight: "bold", marginBottom: "5px" }}
-            >
-              Review 1
+        <div>
+          {reviews.map((review, index) => (
+            <div key={index} style={{ marginBottom: "30px" }}>
+              <div style={{ fontWeight: "bold", marginBottom: "10px" }}>
+                Review {index + 1}
+              </div>
+              <div
+                style={{
+                  backgroundColor: "#888",
+                  color: "#fff",
+                  padding: "12px",
+                  textAlign: "center",
+                }}
+              >
+                {review.ratingDescription}
+              </div>
             </div>
-            <div
-              className="review-content"
-              style={{
-                backgroundColor: "#cccccc",
-                padding: "10px",
-                textAlign: "center",
-              }}
-            >
-              Review Content
-            </div>
-          </div>
-
-          <div className="review" style={{ marginBottom: "20px" }}>
-            <div
-              className="review-title"
-              style={{ fontWeight: "bold", marginBottom: "5px" }}
-            >
-              Review 2
-            </div>
-            <div
-              className="review-content"
-              style={{
-                backgroundColor: "#cccccc",
-                padding: "10px",
-                textAlign: "center",
-              }}
-            >
-              Review Content
-            </div>
-          </div>
-
-          <div className="review" style={{ marginBottom: "20px" }}>
-            <div
-              className="review-title"
-              style={{ fontWeight: "bold", marginBottom: "5px" }}
-            >
-              Review 3
-            </div>
-            <div
-              className="review-content"
-              style={{
-                backgroundColor: "#cccccc",
-                padding: "10px",
-                textAlign: "center",
-              }}
-            >
-              Review Content
-            </div>
-          </div>
-
-          <div className="review" style={{ marginBottom: "20px" }}>
-            <div
-              className="review-title"
-              style={{ fontWeight: "bold", marginBottom: "5px" }}
-            >
-              Review 4
-            </div>
-            <div
-              className="review-content"
-              style={{
-                backgroundColor: "#cccccc",
-                padding: "10px",
-                textAlign: "center",
-              }}
-            >
-              Review Content
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </>
   );
 }
+
+export default MenuItem;
