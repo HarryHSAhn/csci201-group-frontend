@@ -1,17 +1,42 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import '../css/searchitem.css';
+import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import "../css/searchitem.css";
 
 const initialKeywords = [
-  "McCarthy", "Parkside", "EVK", "Dairy", "Eggs", "Fish",
-  "Food Not Analyzed for Allergens", "Halal Ingredients", "Peanuts",
-  "Pork", "Sesame", "Shellfish", "Soy", "Tree Nuts", "Vegan",
-  "Vegetarian", "Wheat / Gluten"
+  "McCarthy",
+  "Parkside",
+  "EVK",
+  "Dairy",
+  "Eggs",
+  "Fish",
+  "Food Not Analyzed for Allergens",
+  "Halal Ingredients",
+  "Peanuts",
+  "Pork",
+  "Sesame",
+  "Shellfish",
+  "Soy",
+  "Tree Nuts",
+  "Vegan",
+  "Vegetarian",
+  "Wheat / Gluten",
 ];
 
 const allergensList = [
-  "Dairy", "Eggs", "Fish", "Food Not Analyzed for Allergens", "Halal Ingredients",
-  "Peanuts", "Pork", "Sesame", "Shellfish", "Soy", "Tree Nuts",
-  "Vegan", "Vegetarian", "Wheat / Gluten"
+  "Dairy",
+  "Eggs",
+  "Fish",
+  "Food Not Analyzed for Allergens",
+  "Halal Ingredients",
+  "Peanuts",
+  "Pork",
+  "Sesame",
+  "Shellfish",
+  "Soy",
+  "Tree Nuts",
+  "Vegan",
+  "Vegetarian",
+  "Wheat / Gluten",
 ];
 
 const diningHallsList = ["McCarthy", "Parkside", "EVK"];
@@ -19,61 +44,59 @@ const sortOptions = [];
 
 export default function Searchitem() {
   const [keywords, setKeywords] = useState(
-    initialKeywords.map(k => ({ text: k, active: false }))
+    initialKeywords.map((k) => ({ text: k, active: false }))
   );
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [diningHall, setDiningHall] = useState([]);
   const [allergen, setAllergen] = useState([]);
-  const [sortLabel, setSortLabel] = useState('');
+  const [sortLabel, setSortLabel] = useState("");
   const [results, setResults] = useState([]);
 
   const handleKeywordClick = (text) => {
     console.log("Keyword clicked:", text);
-    setKeywords(prev =>
-      prev.map(k =>
-        k.text === text ? { ...k, active: !k.active } : k
-      )
+    setKeywords((prev) =>
+      prev.map((k) => (k.text === text ? { ...k, active: !k.active } : k))
     );
 
     if (diningHallsList.includes(text)) {
-      setDiningHall(prev =>
-        prev.includes(text) ? prev.filter(k => k !== text) : [...prev, text]
+      setDiningHall((prev) =>
+        prev.includes(text) ? prev.filter((k) => k !== text) : [...prev, text]
       );
     } else if (allergensList.includes(text)) {
-      setAllergen(prev =>
-        prev.includes(text) ? prev.filter(k => k !== text) : [...prev, text]
+      setAllergen((prev) =>
+        prev.includes(text) ? prev.filter((k) => k !== text) : [...prev, text]
       );
     }
   };
 
   const handleRemoveKeyword = (text) => {
-    setKeywords(prev =>
-      prev.map(k =>
-        k.text === text ? { ...k, active: false } : k
-      )
+    setKeywords((prev) =>
+      prev.map((k) => (k.text === text ? { ...k, active: false } : k))
     );
-    setDiningHall(prev => prev.filter(k => k !== text));
-    setAllergen(prev => prev.filter(k => k !== text));
+    setDiningHall((prev) => prev.filter((k) => k !== text));
+    setAllergen((prev) => prev.filter((k) => k !== text));
   };
 
   const handleSortClick = (label) => {
-    setSortLabel(prev => (prev === label ? "" : label));
+    setSortLabel((prev) => (prev === label ? "" : label));
   };
 
   const fetchData = useCallback(async () => {
     console.log("fetchData() entered");
     try {
       const params = new URLSearchParams();
-      diningHall.forEach(h => params.append("DiningHall", h));
-      allergen.forEach(a => params.append("allergens", a));
-      if (searchText.trim() !== '') {
+      diningHall.forEach((h) => params.append("DiningHall", h));
+      allergen.forEach((a) => params.append("allergens", a));
+      if (searchText.trim() !== "") {
         params.append("search", searchText.trim());
       }
 
       const query = params.toString();
       console.log("Query:", query);
 
-      const response = await fetch(`http://localhost:8080/CSCI201Project/searchServlet?${query}`);
+      const response = await fetch(
+        `http://localhost:8080/CSCI201Project/searchServlet?${query}`
+      );
       const json = await response.json();
       console.log("Response:", json);
 
@@ -92,7 +115,7 @@ export default function Searchitem() {
   };
 
   const handleSearchKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       fetchData();
     }
   };
@@ -109,7 +132,7 @@ export default function Searchitem() {
             {sortedKeywords.map((keyword) => (
               <div
                 key={keyword.text}
-                className={`keyword ${keyword.active ? 'active' : ''}`}
+                className={`keyword ${keyword.active ? "active" : ""}`}
                 onClick={() => handleKeywordClick(keyword.text)}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
@@ -146,10 +169,12 @@ export default function Searchitem() {
               autoComplete="off"
             />
             <div className="sort-buttons">
-              {sortOptions.map(option => (
+              {sortOptions.map((option) => (
                 <button
                   key={option}
-                  className={`sort-button ${sortLabel === option ? 'active' : ''}`}
+                  className={`sort-button ${
+                    sortLabel === option ? "active" : ""
+                  }`}
                   onClick={() => handleSortClick(option)}
                 >
                   {sortLabel === option ? `✓ ${option}` : option}
@@ -160,15 +185,25 @@ export default function Searchitem() {
 
           {/* Results grid */}
           <div className="grid">
-            {results.length > 0 ? (
-              results.map((item, i) => (
-                <div key={i} className="item-card">
-                  <strong>{item.foodItem.name}</strong>
-                  <br />
-                  Rating: {item.review.numericalRating.toFixed(1)}
-                </div>
-              ))
-            ) : null}
+            {results.length > 0
+              ? results.map((item, i) => (
+                  // <div key={i} className="item-card">
+                  //   <strong>{item.foodItem.name}</strong>
+                  //   <br />
+                  //   Rating: {item.review.numericalRating.toFixed(1)}
+                  // </div>
+                  <Link
+                    key={i}
+                    to={`/menu-item/${encodeURIComponent(item.foodItem.name)}`}
+                    className="item-card"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <strong>{item.foodItem.name}</strong>
+                    <br />
+                    Rating: {item.review.numericalRating.toFixed(1)}
+                  </Link>
+                ))
+              : null}
           </div>
         </div>
       </div>
