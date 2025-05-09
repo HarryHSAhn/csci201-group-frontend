@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from "react-router-dom";
 import '../css/searchitem.css';
 
 const initialKeywords = [
@@ -45,6 +46,11 @@ export default function Searchitem() {
       );
     }
   };
+  const navigate = useNavigate();
+  const handleItemClick = (name) => {
+    navigate(`/menu-item/${encodeURIComponent(name)}`);
+  };
+
 
   const handleRemoveKeyword = (text) => {
     setKeywords(prev =>
@@ -162,11 +168,17 @@ export default function Searchitem() {
           <div className="grid">
             {results.length > 0 ? (
               results.map((item, i) => (
-                <div key={i} className="item-card">
-                  <strong>{item.foodItem.name}</strong>
-                  <br />
-                  Rating: {item.review.numericalRating.toFixed(1)}
-                </div>
+                <div
+  key={i}
+  className="item-card"
+  onClick={() => handleItemClick(item.foodItem.name)}
+  style={{ cursor: "pointer" }}
+>
+  <strong>{item.foodItem.name}</strong>
+  <br />
+  Rating: {item.review.numericalRating.toFixed(1)}
+</div>
+
               ))
             ) : null}
           </div>
