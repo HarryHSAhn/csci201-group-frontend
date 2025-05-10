@@ -4,13 +4,13 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Avatar from "boring-avatars";
 
-// Mock user data
+const API_URL = "http://localhost:8080/CSCI201Project";
+
+// Mock user data - need to replace with auth user
 const mockUser = {
-  id: "u123456",
-  name: "Alex Johnson",
-  email: "alex.johnson@example.com",
-  joinDate: "2022-06-15T10:30:00Z",
-  totalReviews: 4
+  uuid: "3161a162-3ff6-4bbf-85a8-a15c64b2ed38",
+  username: "jeremysmith@usc.edu",
+  createdAt: "2025-04-21 02:42:54.541028+00",
 };
 
 // API service (mock implementation for now)
@@ -28,59 +28,73 @@ const userService = {
 };
 
 const reviewsService = {
-  getReviews: async () => {
-    // This will be replaced with actual API call later
-    return mockReviews;
+  getReviews: async (userEmail) => {
+    try {
+      const res = await fetch(API_URL + "/userShowReview", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name: userEmail })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch reviews: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      console.log("Data:", data);
+
+      // Optional: map response into your frontend format
+      return data.map((item, index) => ({
+        id: item.review_id || index + 1,
+        menuItem: item.Food_Item_Name,
+        rating: item.Numerical_Rating,
+        comment: item.Rating_Description,
+        diningHall: item.food_item?.dining_hall || "Unknown",
+        timestamp: item.review_created_at || new Date().toISOString(),
+        foodItemId: item.food_item.id // Save the ID of the food item
+      }));
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      return [];
+    }
   },
-  
-  updateReview: async (updates) => {
-    // This will be replaced with actual API call later
-    console.log("Updates to send:", updates);
-    return { success: true };
+
+  updateReview: async (updates, username) => {
+    try {
+      const res = await fetch(API_URL + "/userEditReview", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: username,
+          review_rating: updates.rating.toString(),
+          review_content: updates.comment,
+          item_id: updates.foodItemId
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to update review: ${res.status}`);
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.error("Error updating review:", err);
+      throw err;
+    }
   },
-  
+
   deleteReview: async (id) => {
-    // This will be replaced with actual API call later
+    // TODO: Hook into your delete-review servlet (if implemented)
     console.log("Deleting review:", id);
     return { success: true };
   }
 };
 
-// Mock data for reviews
-const mockReviews = [
-  {
-    id: 1,
-    diningHall: "North Campus Dining Hall",
-    menuItem: "Chicken Parmesan",
-    rating: 5,
-    comment: "Excellent dish! Perfectly cooked and great flavor.",
-    timestamp: "2023-10-15T14:30:00Z"
-  },
-  {
-    id: 2,
-    diningHall: "South Campus Café",
-    menuItem: "Vegetarian Burrito Bowl",
-    rating: 4,
-    comment: "The quality was outstanding. Fresh ingredients and good portion size.",
-    timestamp: "2023-11-02T09:45:00Z"
-  },
-  {
-    id: 3,
-    diningHall: "Central Dining Commons",
-    menuItem: "Beef Stir Fry",
-    rating: 5,
-    comment: "So tasty! The beef was tender and the vegetables were crisp.",
-    timestamp: "2023-12-10T16:20:00Z"
-  },
-  {
-    id: 4,
-    diningHall: "West Side Eatery",
-    menuItem: "Classic Cheeseburger",
-    rating: 5,
-    comment: "Perfect burger! Juicy patty and melty cheese.",
-    timestamp: "2024-01-05T11:15:00Z"
-  }
-];
 
 // User Profile Component
 const UserProfileHeader = ({ user, isEditingProfile, setIsEditingProfile, profileData, setProfileData }) => {
@@ -262,7 +276,7 @@ export default function UserProfile() {
       });
       
       // Fetch reviews
-      const reviewsData = await reviewsService.getReviews();
+      const reviewsData = await reviewsService.getReviews(userData.username);
       setReviews(reviewsData);
       // filteredReviews will be set by useEffect
       
@@ -292,7 +306,8 @@ export default function UserProfile() {
           comment: review.comment,
           // Preserve these fields but they won't be editable
           diningHall: review.diningHall,
-          menuItem: review.menuItem
+          menuItem: review.menuItem,
+          foodItemId: review.foodItemId
         },
       }));
     }
@@ -333,12 +348,13 @@ export default function UserProfile() {
         // Only update rating and comment
         rating: editedReviews[id].rating,
         comment: editedReviews[id].comment,
-        // Preserve original timestamp
-        timestamp: review.timestamp
+        // Preserve original timestamp and foodItemId
+        timestamp: review.timestamp,
+        foodItemId: review.foodItemId
       };
 
       // API call to update review
-      const result = await reviewsService.updateReview(updatedReview);
+      const result = await reviewsService.updateReview(updatedReview, user.username);
       
       if (result.success) {
         // Update local state
