@@ -1,7 +1,21 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
+
+const API_URL = "http://localhost:8080/CSCI201Project";
 
 export default function Signup() {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const loggedIn = Cookies.get('loggedIn');
+    if (loggedIn) {
+      console.log('User is already logged in');
+      alert('You are already logged in');
+      navigate('/');
+    }
+  }, [navigate]);
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -10,6 +24,7 @@ export default function Signup() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,18 +45,47 @@ export default function Signup() {
     
     setIsLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
-      // This will be replaced with actual API call later
       console.log('Signup data:', formData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Actual API call to the RegisterServlet
+      const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.email,
+          password: formData.password,
+        }),
+      });
       
-      // Redirect would happen here after successful signup
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setSuccess("Account created successfully! Redirecting to login...");
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
+        
+        // Redirect to login page after a delay
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        throw new Error(data.message || 'Registration failed');
+      }
+      
       setIsLoading(false);
     } catch (err) {
-      setError('Failed to create account. Please try again.');
+      console.error('Registration error:', err);
+      setError(err.message || 'Failed to create account. Please try again.');
       setIsLoading(false);
     }
   };
@@ -64,6 +108,16 @@ export default function Signup() {
             <div className="flex">
               <div>
                 <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {success && (
+          <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+            <div className="flex">
+              <div>
+                <p className="text-sm text-green-700">{success}</p>
               </div>
             </div>
           </div>
