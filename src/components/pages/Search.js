@@ -188,25 +188,23 @@ export default function Searchitem() {
 
           {/* Results grid */}
           <div className="grid">
-            {results.length > 0
-              ? results.map((item, i) => (
-                  // <div key={i} className="item-card">
-                  //   <strong>{item.foodItem.name}</strong>
-                  //   <br />
-                  //   Rating: {item.review.numericalRating.toFixed(1)}
-                  // </div>
-                  <Link
-                    key={i}
-                    to={`/menu-item/${encodeURIComponent(item.foodItem.food_id)}`}
-                    className="item-card"
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
-                    <strong>{item.foodItem.name}</strong>
-                    <br />
-                    Rating: {item.review.numericalRating.toFixed(1)}
-                  </Link>
-                ))
-              : null}
+          {results.length > 0
+            ? results.map((item, i) => (
+                <Link
+                  key={i}
+                  to={`/menu-item/${encodeURIComponent(item.foodItem.food_id)}`}
+                  className="item-card"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  <strong>{item.foodItem.name}</strong>
+                  <br />
+                  {item.review
+                    ? `Rating: ${item.review.numericalRating.toFixed(1)}`
+                    : "No reviews yet"}
+                </Link>
+              ))
+            : null}
+
           </div>
         </div>
       </div>
