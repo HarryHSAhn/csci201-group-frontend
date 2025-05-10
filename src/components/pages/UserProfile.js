@@ -3,30 +3,12 @@ import { FaStar, FaRegStar, FaEdit, FaTrash, FaCheck, FaTimes } from "react-icon
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Avatar from "boring-avatars";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:8080/CSCI201Project";
 
-// Mock user data - need to replace with auth user
-const mockUser = {
-  uuid: "3161a162-3ff6-4bbf-85a8-a15c64b2ed38",
-  username: "jeremysmith@usc.edu",
-  createdAt: "2025-04-21 02:42:54.541028+00",
-};
-
-// API service (mock implementation for now)
-const userService = {
-  getCurrentUser: async () => {
-    // This will be replaced with actual API call later
-    return mockUser;
-  },
-  
-  updateUserProfile: async (updates) => {
-    // This will be replaced with actual API call later
-    console.log("Profile updates to send:", updates);
-    return { success: true };
-  }
-};
-
+// API service for reviews
 const reviewsService = {
   getReviews: async (userEmail) => {
     try {
@@ -44,9 +26,7 @@ const reviewsService = {
 
       const data = await res.json();
 
-      console.log("Data:", data);
-
-      // Optional: map response into your frontend format
+      // Map response into frontend format
       return data.map((item, index) => ({
         id: item.review_id || index + 1,
         menuItem: item.Food_Item_Name,
@@ -54,7 +34,7 @@ const reviewsService = {
         comment: item.Rating_Description,
         diningHall: item.food_item?.dining_hall || "Unknown",
         timestamp: item.review_created_at || new Date().toISOString(),
-        foodItemId: item.food_item.id // Save the ID of the food item
+        foodItemId: item.fooditem_uuid // Save the UUID of the food item
       }));
     } catch (err) {
       console.error("Error fetching reviews:", err);
@@ -95,101 +75,23 @@ const reviewsService = {
   }
 };
 
-
-// User Profile Component
-const UserProfileHeader = ({ user, isEditingProfile, setIsEditingProfile, profileData, setProfileData }) => {
-  const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSaveProfile = async () => {
-    try {
-      // Call API service to update profile
-      const result = await userService.updateUserProfile(profileData);
-      
-      if (result.success) {
-        setIsEditingProfile(false);
-        toast.success("Profile updated successfully");
-      }
-    } catch (error) {
-      toast.error("Failed to update profile");
-    }
-  };
-
-  // Format join date
-  const formatJoinDate = (dateString) => {
-    const date = new Date(dateString);
-    return `Joined ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
-  };
-
+// User Profile Header Component (simplified to just show email)
+const UserProfileHeader = ({ userEmail }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
         <div className="flex-shrink-0">
           <Avatar
             size={120}
-            name={user.id}
+            name={userEmail}
             variant="beam"
             colors={['#6366F1', '#8B5CF6', '#D946EF', '#EC4899', '#F472B6']}
           />
         </div>
         
         <div className="flex-grow space-y-3 text-center md:text-left">
-          {isEditingProfile ? (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={profileData.name || ''}
-                  onChange={(e) => handleProfileChange('name', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={profileData.email || ''}
-                  onChange={(e) => handleProfileChange('email', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div className="flex gap-2 justify-center md:justify-start mt-4">
-                <button
-                  onClick={handleSaveProfile}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setIsEditingProfile(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <h1 className="text-2xl font-bold text-gray-800">{profileData.name}</h1>
-              <p className="text-gray-600">{profileData.email}</p>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-sm text-gray-500 mt-2">
-                <span>{formatJoinDate(user.joinDate)}</span>
-                <span className="hidden sm:inline">•</span>
-                <span>{user.totalReviews} {user.totalReviews === 1 ? 'Review' : 'Reviews'}</span>
-              </div>
-              <button
-                onClick={() => setIsEditingProfile(true)}
-                className="mt-3 px-4 py-1.5 text-sm border border-purple-200 text-purple-600 rounded-md hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-              >
-                Edit Profile
-              </button>
-            </>
-          )}
+          <h1 className="text-2xl font-bold text-gray-800">User Profile</h1>
+          <p className="text-gray-600">{userEmail}</p>
         </div>
       </div>
     </div>
@@ -223,9 +125,8 @@ const StarRating = ({ rating, editable = false, onChange }) => {
 };
 
 export default function UserProfile() {
-  const [user, setUser] = useState(null);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profileData, setProfileData] = useState({});
+  const navigate = useNavigate();
+  const [userEmail, setUserEmail] = useState("");
   const [reviews, setReviews] = useState([]);
   const [filteredReviews, setFilteredReviews] = useState([]);
   const [diningHallFilter, setDiningHallFilter] = useState("all");
@@ -240,6 +141,27 @@ export default function UserProfile() {
     const halls = reviews.map(review => review.diningHall);
     return [...new Set(halls)];
   }, [reviews]);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const loggedIn = Cookies.get('loggedIn') === 'true';
+    if (!loggedIn) {
+      // Redirect to login if not logged in
+      toast.error("Please log in to view your profile");
+      navigate('/login');
+      return;
+    }
+    
+    // Get user email from cookies
+    const email = Cookies.get('userEmail');
+    if (!email) {
+      toast.error("User information not found");
+      navigate('/login');
+      return;
+    }
+    
+    setUserEmail(email);
+  }, [navigate]);
 
   // Filter and sort reviews when filter or sort option changes
   useEffect(() => {
@@ -263,36 +185,28 @@ export default function UserProfile() {
     setFilteredReviews(result);
   }, [reviews, diningHallFilter, sortOption]);
 
-  // Fetch user data and reviews
-  const fetchUserData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Fetch user profile
-      const userData = await userService.getCurrentUser();
-      setUser(userData);
-      setProfileData({
-        name: userData.name,
-        email: userData.email
-      });
-      
-      // Fetch reviews
-      const reviewsData = await reviewsService.getReviews(userData.username);
-      setReviews(reviewsData);
-      // filteredReviews will be set by useEffect
-      
-      setError(null);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-      setError("Failed to load user data. Please try again later.");
-      toast.error("Failed to load user data");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
+  // Fetch user reviews
   useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+    const fetchReviews = async () => {
+      if (!userEmail) return;
+      
+      setIsLoading(true);
+      try {
+        // Fetch reviews using the email from cookies
+        const reviewsData = await reviewsService.getReviews(userEmail);
+        setReviews(reviewsData);
+        setError(null);
+      } catch (error) {
+        console.error("Failed to fetch reviews:", error);
+        setError("Failed to load your reviews. Please try again later.");
+        toast.error("Failed to load your reviews");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [userEmail]);
 
   // Handle edit mode toggle
   const handleEditClick = (id) => {
@@ -353,8 +267,8 @@ export default function UserProfile() {
         foodItemId: review.foodItemId
       };
 
-      // API call to update review
-      const result = await reviewsService.updateReview(updatedReview, user.username);
+      // API call to update review using the logged-in email
+      const result = await reviewsService.updateReview(updatedReview, userEmail);
       
       if (result.success) {
         // Update local state
@@ -391,9 +305,6 @@ export default function UserProfile() {
           const updatedReviews = reviews.filter(review => review.id !== id);
           setReviews(updatedReviews);
           
-          // No need to manually update filteredReviews since the useEffect will handle it
-          // when reviews state changes
-          
           toast.success("Review deleted successfully");
         }
       } catch (error) {
@@ -426,7 +337,7 @@ export default function UserProfile() {
         <div className="bg-red-100 text-red-700 p-4 rounded-md">
           {error}
           <button 
-            onClick={fetchUserData}
+            onClick={() => window.location.reload()}
             className="ml-4 px-3 py-1 bg-red-200 text-red-800 rounded-md hover:bg-red-300"
           >
             Retry
@@ -439,15 +350,7 @@ export default function UserProfile() {
   return (
     <div className="flex justify-center py-10 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
       <div className="w-full max-w-3xl px-4">
-        {user && (
-          <UserProfileHeader 
-            user={user} 
-            isEditingProfile={isEditingProfile}
-            setIsEditingProfile={setIsEditingProfile}
-            profileData={profileData}
-            setProfileData={setProfileData}
-          />
-        )}
+        <UserProfileHeader userEmail={userEmail} />
         
         <div className="bg-white p-8 rounded-lg shadow-lg">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -596,4 +499,4 @@ export default function UserProfile() {
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );
-} 
+}

@@ -122,6 +122,9 @@ export default function Searchitem() {
 
   const sortedKeywords = [...keywords].sort((a, b) => b.active - a.active);
 
+  console.log("search results", results);
+
+
   return (
     <div>
       <div className="container">
@@ -194,7 +197,7 @@ export default function Searchitem() {
                   // </div>
                   <Link
                     key={i}
-                    to={`/menu-item/${encodeURIComponent(item.foodItem.name)}`}
+                    to={`/menu-item/${encodeURIComponent(item.foodItem.food_id)}`}
                     className="item-card"
                     style={{ textDecoration: "none", color: "inherit" }}
                   >

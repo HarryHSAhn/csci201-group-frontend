@@ -21,7 +21,7 @@ export default function NavBar() {
   const handleLogOut = () => {
     Cookies.remove('loggedIn');
     Cookies.remove('userEmail');
-    navigate('/home');
+    navigate('/');
     alert('You have been logged out');
   };
 
@@ -46,16 +46,18 @@ export default function NavBar() {
                 <FaHome className="mr-1" /> Home
               </Link>
 
-              <Link
-                to="/search"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive('/search') 
-                    ? 'border-purple-500 text-gray-900' 
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                <FaUtensils className="mr-1" /> Dining Halls
-              </Link>
+              {loggedIn && (
+                <Link
+                  to="/search"
+                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                    isActive('/search') 
+                      ? 'border-purple-500 text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  }`}
+                >
+                  <FaUtensils className="mr-1" /> Dining Halls
+                </Link>
+              )}
             </div>
           </div>
 
@@ -81,12 +83,24 @@ export default function NavBar() {
                 </button>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
-              >
-                Log in
-              </Link>
+              <>
+                <Link
+                  to="/login"
+                  className={`inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md ${
+                    isActive('/login') 
+                      ? 'bg-purple-100 text-purple-700' 
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                  }`}
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                >
+                  Sign up
+                </Link>
+              </>
             )}
           </div>
 
@@ -121,19 +135,21 @@ export default function NavBar() {
               </div>
             </Link>
 
-            <Link
-              to="/search"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                isActive('/search') 
-                  ? 'bg-purple-50 border-purple-500 text-purple-700' 
-                  : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <div className="flex items-center">
-                <FaUtensils className="mr-2" /> <span>Dining Halls</span>
-              </div>
-            </Link>
+            {loggedIn && (
+              <Link
+                to="/search"
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  isActive('/search') 
+                    ? 'bg-purple-50 border-purple-500 text-purple-700' 
+                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <div className="flex items-center">
+                  <FaUtensils className="mr-2" /> <span>Dining Halls</span>
+                </div>
+              </Link>
+            )}
 
             {loggedIn ? (
               <>
@@ -163,15 +179,34 @@ export default function NavBar() {
                 </div>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-purple-600 hover:bg-gray-50 hover:border-gray-300"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <div className="flex items-center">
-                  <FaUser className="mr-2" /> Login
-                </div>
-              </Link>
+              <>
+                <Link
+                  to="/login"
+                  className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                    isActive('/login') 
+                      ? 'bg-purple-50 border-purple-500 text-purple-700' 
+                      : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <div className="flex items-center">
+                    <FaUser className="mr-2" /> Login
+                  </div>
+                </Link>
+                <Link
+                  to="/signup"
+                  className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                    isActive('/signup') 
+                      ? 'bg-purple-50 border-purple-500 text-purple-700' 
+                      : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <div className="flex items-center">
+                    <FaUser className="mr-2" /> Sign up
+                  </div>
+                </Link>
+              </>
             )}
           </div>
         </div>

@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useEffect } from 'react';
 
+const API_URL = "http://localhost:8080/CSCI201Project";
+
 export default function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
 
   useEffect(() => {
     const loggedIn = Cookies.get('loggedIn');
@@ -16,8 +21,8 @@ export default function Login() {
     } else {
       console.log('User is not logged in');
     }
-  }, []);
-  const navigate = useNavigate();
+  }, [navigate]);
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -42,7 +47,7 @@ export default function Login() {
       console.log('Login data:', formData);
       
       // API call
-      const response = await fetch('/CSCI201Project/login', {
+      const response = await fetch(API_URL + '/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +72,8 @@ export default function Login() {
       Cookies.set('loggedIn', 'true', { expires: 1 });  
       Cookies.set('userEmail', formData.email, { expires: 1 }); 
 
-      navigate('/');
+      // Navigate to the referring page or home if none
+      navigate(from);
 
       setIsLoading(false);
     } catch (err) {
@@ -88,6 +94,18 @@ export default function Login() {
             </Link>
           </p>
         </div>
+
+        {from !== '/' && (
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+            <div className="flex">
+              <div>
+                <p className="text-sm text-blue-700">
+                  You'll be redirected back after login
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
