@@ -199,32 +199,34 @@ export default function MenuItem() {
     const d = new Date(timestamp);
     return isNaN(d)
       ? "Unknown date"
-      : d.toLocaleDateString("en-US", {
+      : d.toLocaleString("en-US", {
           year: "numeric",
           month: "short",
           day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
         });
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#990000]"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="bg-red-100 text-red-700 p-6 rounded-md max-w-md">
-          <h2 className="text-xl font-bold mb-4">Error</h2>
-          <p>{error}</p>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+          <h2 className="text-2xl font-bold text-[#990000] mb-4">Error</h2>
+          <p className="text-gray-700 mb-6">{error}</p>
           <Link
             to="/"
-            className="mt-4 inline-block text-blue-600 hover:underline"
+            className="inline-flex items-center text-[#990000] hover:text-[#800000] font-medium"
           >
-            Return to Homepage
+            <FaArrowLeft className="mr-2" /> Return to Homepage
           </Link>
         </div>
       </div>
@@ -232,141 +234,183 @@ export default function MenuItem() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
-      <div className="max-w-5xl mx-auto">
-        <Link
-          to="/"
-          className="inline-flex items-center text-purple-600 hover:text-purple-800 mb-6"
-        >
-          <FaArrowLeft className="mr-2" /> Back to Home
-        </Link>
-
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-3 gap-6 p-8">
-          <div className="md:col-span-2">
-            <div className="uppercase tracking-wide text-sm text-purple-600 font-semibold">
-              {menuItem.diningHall}
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 whitespace-normal break-words leading-tight">
-              {menuItem.name}
-            </h1>
-            <div className="mt-2 flex items-center">
-              <StarRating rating={Math.round(menuItem.averageRating)} />
-              <span className="ml-2 text-gray-600">
-                {menuItem.averageRating.toFixed(1)}
-              </span>
-              <span className="ml-2 text-gray-500">
-                ({menuItem.reviews.length} reviews)
-              </span>
-            </div>
-            <p className="mt-4 text-gray-700">{menuItem.description}</p>
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">
-              Dietary Attributes
-            </h2>
-            {menuItem.keywords.length > 0 ? (
-              <ul className="list-disc list-inside text-sm text-gray-700">
-                {menuItem.keywords.map((kw) => (
-                  <li key={kw}>{kw}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500">None specified</p>
-            )}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumb and Back Button */}
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center text-[#990000] hover:text-[#800000] font-medium"
+          >
+            <FaArrowLeft className="mr-2" /> Back to Search
+          </Link>
+          <div className="text-sm text-gray-500">
+            USC Dining Halls / {menuItem.diningHall}
           </div>
         </div>
 
-        {/* Reviews */}
-        <div className="p-8 border-t border-gray-200 bg-white rounded-b-xl">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
-
-          <div className="mb-10">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Write a Review
-            </h3>
-            {isAuthenticated ? (
-              <form onSubmit={handleSubmitReview} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Rating
-                  </label>
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        className="text-2xl focus:outline-none"
-                        onClick={() => handleRatingChange(r)}
-                      >
-                        {r <= newReview.rating ? (
-                          <FaStar className="text-yellow-400" />
-                        ) : (
-                          <FaRegStar className="text-yellow-400" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
+        {/* Main Content Card */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+          {/* Header Section */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between">
+              <div className="flex-1">
+                <div className="flex items-center mb-2">
+                  <span className="text-sm font-medium text-[#990000] bg-[#990000]/10 px-3 py-1 rounded-full">
+                    {menuItem.diningHall}
+                  </span>
                 </div>
-                <div>
-                  <label
-                    htmlFor="comment"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Comment
-                  </label>
-                  <textarea
-                    id="comment"
-                    name="comment"
-                    rows={4}
-                    value={newReview.comment}
-                    onChange={handleReviewChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
-                    placeholder="Share your thoughts about this dish..."
-                  />
-                </div>
-                <div>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                  >
-                    Submit Review
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="bg-gray-50 p-6 rounded-lg text-center">
-                <p className="text-gray-700 mb-3">Please log in to submit a review</p>
-                <button
-                  onClick={() => navigate('/login', { state: { from: `/menu-item/${id}` } })}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                >
-                  Log In
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            {menuItem.reviews.length > 0 ? (
-              menuItem.reviews.map((review) => (
-                <div key={review.id} className="bg-gray-50 p-4 rounded-lg">
-                  <p className="font-medium text-gray-900">{review.user}</p>
-                  <div className="mt-1 flex items-center">
-                    <StarRating rating={review.rating} />
-                    <span className="ml-2 text-sm text-gray-500">
-                      {formatDate(review.timestamp)}
+                <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                  {menuItem.name}
+                </h1>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <StarRating rating={Math.round(menuItem.averageRating)} />
+                    <span className="ml-2 text-lg font-medium text-gray-900">
+                      {menuItem.averageRating.toFixed(1)}
                     </span>
                   </div>
-                  <p className="mt-3 text-gray-700">{review.comment}</p>
+                  <span className="text-gray-500">
+                    {menuItem.reviews.length} {menuItem.reviews.length === 1 ? 'review' : 'reviews'}
+                  </span>
                 </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-500 py-6">
-                No reviews yet. Be the first to review this item!
-              </p>
-            )}
+              </div>
+              
+              {/* Dietary Attributes */}
+              <div className="mt-4 md:mt-0 md:ml-6">
+                <h2 className="text-sm font-semibold text-gray-900 mb-2">
+                  Dietary Information
+                </h2>
+                {menuItem.keywords.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {menuItem.keywords.map((kw) => (
+                      <span key={kw} className="inline-block bg-[#990000]/10 text-[#990000] text-sm px-3 py-1 rounded-full">
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No dietary information available</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Description Section */}
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">About this dish</h2>
+            <p className="text-gray-700">{menuItem.description}</p>
+          </div>
+
+          {/* Reviews Section */}
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Reviews</h2>
+              {isAuthenticated && (
+                <button
+                  onClick={() => document.getElementById('review-form').scrollIntoView({ behavior: 'smooth' })}
+                  className="px-4 py-2 bg-[#990000] text-white rounded-md hover:bg-[#800000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#990000]"
+                >
+                  Write a Review
+                </button>
+              )}
+            </div>
+
+            {/* Review Form */}
+            <div id="review-form" className="mb-10">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {isAuthenticated ? 'Write a Review' : 'Sign in to write a review'}
+              </h3>
+              {isAuthenticated ? (
+                <form onSubmit={handleSubmitReview} className="space-y-4 bg-gray-50 p-6 rounded-lg">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Rating
+                    </label>
+                    <div className="flex space-x-2">
+                      {[1, 2, 3, 4, 5].map((r) => (
+                        <button
+                          key={r}
+                          type="button"
+                          className="text-3xl focus:outline-none transform hover:scale-110 transition-transform"
+                          onClick={() => handleRatingChange(r)}
+                        >
+                          {r <= newReview.rating ? (
+                            <FaStar className="text-[#FFCC00]" />
+                          ) : (
+                            <FaRegStar className="text-[#FFCC00]" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="comment"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Your Review
+                    </label>
+                    <textarea
+                      id="comment"
+                      name="comment"
+                      rows={4}
+                      value={newReview.comment}
+                      onChange={handleReviewChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#990000] focus:border-[#990000]"
+                      placeholder="Share your experience with this dish..."
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-[#990000] text-white rounded-lg hover:bg-[#800000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#990000] font-medium"
+                    >
+                      Submit Review
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="bg-gray-50 p-6 rounded-lg text-center">
+                  <p className="text-gray-700 mb-4">Please sign in to share your experience</p>
+                  <button
+                    onClick={() => navigate('/login', { state: { from: `/menu-item/${id}` } })}
+                    className="px-6 py-3 bg-[#990000] text-white rounded-lg hover:bg-[#800000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#990000] font-medium"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Reviews List */}
+            <div className="space-y-6">
+              {menuItem.reviews.length > 0 ? (
+                menuItem.reviews.map((review) => (
+                  <div key={review.id} className="bg-white border border-gray-200 rounded-lg p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">{review.user}</p>
+                        <div className="mt-1 flex items-center">
+                          <StarRating rating={review.rating} />
+                          <span className="ml-2 text-sm text-gray-500">
+                            {formatDate(review.timestamp)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-gray-700">{review.comment}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <p className="text-gray-500 mb-2">No reviews yet</p>
+                  <p className="text-gray-400">Be the first to review this dish!</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

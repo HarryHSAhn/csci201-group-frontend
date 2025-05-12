@@ -355,10 +355,12 @@ export default function UserProfile() {
 
   // Format timestamp
   const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
+    return new Date(timestamp).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -389,7 +391,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-10">
+    <div className="min-h-screen bg-gray-50 py-10">
       <div className="max-w-4xl mx-auto px-4">
         <UserProfileHeader userEmail={userEmail} />
         
@@ -405,7 +407,7 @@ export default function UserProfile() {
                   placeholder="Search reviews..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#990000] focus:border-transparent"
                 />
               </div>
               
@@ -413,7 +415,7 @@ export default function UserProfile() {
                 <select
                   value={diningHallFilter}
                   onChange={(e) => setDiningHallFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#990000] focus:border-transparent"
                 >
                   <option value="all">All Dining Halls</option>
                   {uniqueDiningHalls.map((hall) => (
@@ -427,7 +429,7 @@ export default function UserProfile() {
                     onClick={() => setSortOption("newest")}
                     className={`px-4 py-2 text-sm font-medium ${
                       sortOption === "newest"
-                        ? "bg-purple-600 text-white"
+                        ? "bg-[#990000] text-white"
                         : "bg-white text-gray-700 hover:bg-gray-50"
                     }`}
                   >
@@ -438,7 +440,7 @@ export default function UserProfile() {
                     onClick={() => setSortOption("oldest")}
                     className={`px-4 py-2 text-sm font-medium ${
                       sortOption === "oldest"
-                        ? "bg-purple-600 text-white"
+                        ? "bg-[#990000] text-white"
                         : "bg-white text-gray-700 hover:bg-gray-50"
                     }`}
                   >
@@ -462,7 +464,8 @@ export default function UserProfile() {
               {filteredReviews.map((review) => (
                 <div 
                   key={review.id} 
-                  className="bg-white border border-gray-100 rounded-xl p-6 transition-all hover:shadow-md"
+                  className={`bg-white border border-gray-100 rounded-xl p-6 transition-all hover:shadow-md ${!editStates[review.id] ? 'cursor-pointer' : ''}`}
+                  onClick={() => !editStates[review.id] && navigate(`/menu-item/${review.foodItemId}`)}
                 >
                   <div className="flex flex-col space-y-4">
                     <div className="flex justify-between items-start">
@@ -471,7 +474,7 @@ export default function UserProfile() {
                         <p className="text-sm text-gray-600">{review.diningHall}</p>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                         {editStates[review.id] ? (
                           <>
                             <button
@@ -493,7 +496,7 @@ export default function UserProfile() {
                           <>
                             <button
                               onClick={() => handleEditClick(review.id)}
-                              className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-2 text-[#990000] hover:bg-red-50 rounded-lg transition-colors"
                               title="Edit"
                             >
                               <FaEdit />
@@ -512,7 +515,7 @@ export default function UserProfile() {
                     
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-4">
-                        <div>
+                        <div onClick={(e) => e.stopPropagation()}>
                           <StarRating 
                             rating={editStates[review.id] ? editedReviews[review.id]?.rating : review.rating} 
                             editable={editStates[review.id]}
@@ -534,7 +537,8 @@ export default function UserProfile() {
                         value={editedReviews[review.id]?.comment || ""}
                         onChange={(e) => handleFieldChange(review.id, "comment", e.target.value)}
                         placeholder="Your review"
-                        className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[100px] text-gray-700"
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#990000] focus:border-transparent min-h-[100px] text-gray-700"
+                        onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
                       <p className="text-gray-700">{review.comment}</p>

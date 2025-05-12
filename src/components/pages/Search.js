@@ -179,6 +179,8 @@ export default function Searchitem() {
 
       const data = Array.isArray(json) ? json : [json];
       setResults(data);
+
+      console.log("search results", data);
     } catch (error) {
       console.error("Fetch error:", error);
     } finally {
@@ -242,14 +244,14 @@ export default function Searchitem() {
                   onClick={() => handleKeywordClick(keyword.text)}
                   className={`px-3 py-2 rounded-md cursor-pointer flex items-center justify-between transition-colors ${
                     keyword.active 
-                      ? "bg-purple-100 text-purple-800 font-medium" 
+                      ? "bg-[#990000]/10 text-[#990000] font-medium" 
                       : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   <span>{keyword.text}</span>
                   {keyword.active && (
                     <button
-                      className="text-purple-600 hover:text-purple-800"
+                      className="text-[#990000] hover:text-[#800000]"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveKeyword(keyword.text);
@@ -273,14 +275,14 @@ export default function Searchitem() {
                   onClick={() => handleKeywordClick(keyword.text)}
                   className={`px-3 py-2 rounded-md cursor-pointer flex items-center justify-between transition-colors ${
                     keyword.active 
-                      ? "bg-green-100 text-green-800 font-medium" 
+                      ? "bg-[#990000]/10 text-[#990000] font-medium" 
                       : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   <span>{keyword.text}</span>
                   {keyword.active && (
                     <button
-                      className="text-green-600 hover:text-green-800"
+                      className="text-[#990000] hover:text-[#800000]"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveKeyword(keyword.text);
@@ -306,12 +308,12 @@ export default function Searchitem() {
                 value={searchText}
                 onChange={handleSearchInput}
                 onKeyDown={handleSearchKeyPress}
-                className="w-full px-4 py-3 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#990000] focus:border-transparent"
               />
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <button 
                 onClick={fetchData}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-purple-600 text-white px-2 py-1 rounded-md text-sm hover:bg-purple-700"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-[#990000] text-white px-2 py-1 rounded-md text-sm hover:bg-[#800000]"
               >
                 Search
               </button>
@@ -324,10 +326,10 @@ export default function Searchitem() {
                   <div className="flex items-center gap-1 text-sm">
                     <span className="text-gray-600">Dining Halls:</span>
                     {activeDiningHalls.map(k => (
-                      <span key={k.text} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md flex items-center">
+                      <span key={k.text} className="bg-[#990000]/10 text-[#990000] px-2 py-1 rounded-md flex items-center">
                         {k.text}
                         <button 
-                          className="ml-1 text-purple-600 hover:text-purple-800" 
+                          className="ml-1 text-[#990000] hover:text-[#800000]" 
                           onClick={() => handleRemoveKeyword(k.text)}
                         >
                           &times;
@@ -341,10 +343,10 @@ export default function Searchitem() {
                   <div className="flex items-center gap-1 text-sm flex-wrap">
                     <span className="text-gray-600">Dietary:</span>
                     {activeDietary.map(k => (
-                      <span key={k.text} className="bg-green-100 text-green-800 px-2 py-1 rounded-md flex items-center">
+                      <span key={k.text} className="bg-[#990000]/10 text-[#990000] px-2 py-1 rounded-md flex items-center">
                         {k.text}
                         <button 
-                          className="ml-1 text-green-600 hover:text-green-800" 
+                          className="ml-1 text-[#990000] hover:text-[#800000]" 
                           onClick={() => handleRemoveKeyword(k.text)}
                         >
                           &times;
@@ -368,7 +370,7 @@ export default function Searchitem() {
               <div className="relative">
                 <button 
                   onClick={() => setShowSortMenu(!showSortMenu)}
-                  className="flex items-center px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                  className="flex items-center px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#990000] focus:ring-opacity-50"
                 >
                   <FaSort className="mr-2 text-gray-500" />
                   <span>Sort: {currentSortOption.label}</span>
@@ -382,14 +384,14 @@ export default function Searchitem() {
                         onClick={() => handleSortClick(option.id)}
                         className={`flex items-center w-full text-left px-4 py-2 text-sm ${
                           sortOption === option.id 
-                            ? 'bg-purple-50 text-purple-700' 
+                            ? 'bg-[#990000]/10 text-[#990000]' 
                             : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
                         {option.icon}
                         {option.label}
                         {sortOption === option.id && (
-                          <span className="ml-auto text-purple-600">✓</span>
+                          <span className="ml-auto text-[#990000]">✓</span>
                         )}
                       </button>
                     ))}
@@ -402,7 +404,7 @@ export default function Searchitem() {
           {/* Results grid */}
           {isLoading ? (
             <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#990000]"></div>
             </div>
           ) : results.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -410,7 +412,7 @@ export default function Searchitem() {
                 <Link
                   key={item.foodItem.food_id}
                   to={`/menu-item/${encodeURIComponent(item.foodItem.food_id)}`}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-purple-200 transition-all overflow-hidden flex flex-col"
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-[#990000] transition-all overflow-hidden flex flex-col"
                 >
                   <div className="p-4 flex-grow">
                     <div className="flex justify-between items-start">
@@ -419,8 +421,8 @@ export default function Searchitem() {
                         <p className="text-sm text-gray-600 mb-2">{item.foodItem.diningHall}</p>
                       </div>
                       {item.review && (
-                        <div className="flex items-center bg-purple-50 px-2 py-1 rounded text-sm">
-                          <FaStar className="text-yellow-400 mr-1" />
+                        <div className="flex items-center bg-[#990000]/10 px-2 py-1 rounded text-sm">
+                          <FaStar className="text-[#FFCC00] mr-1" />
                           <span className="text-gray-800 font-medium">{item.review.numericalRating.toFixed(1)}</span>
                         </div>
                       )}
@@ -445,7 +447,7 @@ export default function Searchitem() {
                             allergensList.some(a => a.toLowerCase() === key.toLowerCase()) && value === true
                           )
                           .map(([key]) => (
-                            <span key={key} className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                            <span key={key} className="inline-block bg-[#990000]/10 text-[#990000] text-xs px-2 py-1 rounded">
                               {key}
                             </span>
                           ))
