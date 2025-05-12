@@ -72,10 +72,28 @@ const reviewsService = {
     }
   },
 
-  deleteReview: async (id) => {
-    // TODO: Hook into your delete-review servlet (if implemented)
-    console.log("Deleting review:", id);
-    return { success: true };
+  deleteReview: async (itemId, userEmail) => {
+    try {
+      const res = await fetch(API_URL + "/userDeleteReview", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userEmail: userEmail,
+          item_id: itemId
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to delete review: ${res.status}`);
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.error("Error deleting review:", err);
+      throw err;
+    }
   }
 };
 
@@ -312,8 +330,14 @@ export default function UserProfile() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       try {
+        // Get the foodItemId from the review
+        const review = reviews.find(r => r.id === id);
+        if (!review) {
+          throw new Error("Review not found");
+        }
+
         // API call to delete review
-        const result = await reviewsService.deleteReview(id);
+        const result = await reviewsService.deleteReview(review.foodItemId, userEmail);
         
         if (result.success) {
           // Update local state
