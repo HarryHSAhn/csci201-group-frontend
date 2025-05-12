@@ -26,15 +26,18 @@ const reviewsService = {
 
       const data = await res.json();
 
+      console.log("user profile data", data);
+
       // Map response into frontend format
       return data.map((item, index) => ({
         id: item.review_id || index + 1,
-        menuItem: item.Food_Item_Name,
+        menuItem: item.food_item?.food_name || "Unknown",
         rating: item.Numerical_Rating,
         comment: item.Rating_Description,
         diningHall: item.food_item?.dining_hall || "Unknown",
         timestamp: item.review_created_at || new Date().toISOString(),
-        foodItemId: item.fooditem_uuid // Save the UUID of the food item
+        foodItemId: item.food_item?.id, // Save the UUID of the food item
+        menuItem_avg_rating: item.food_item?.avg_rating || 0
       }));
     } catch (err) {
       console.error("Error fetching reviews:", err);
@@ -44,6 +47,7 @@ const reviewsService = {
 
   updateReview: async (updates, username) => {
     try {
+      console.log("user profile updates", updates);
       const res = await fetch(API_URL + "/userEditReview", {
         method: "POST",
         headers: {
@@ -130,7 +134,8 @@ export default function UserProfile() {
   const [reviews, setReviews] = useState([]);
   const [filteredReviews, setFilteredReviews] = useState([]);
   const [diningHallFilter, setDiningHallFilter] = useState("all");
-  const [sortOption, setSortOption] = useState("newest"); // "newest" or "oldest"
+  const [sortOption, setSortOption] = useState("newest");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editStates, setEditStates] = useState({});
@@ -163,9 +168,19 @@ export default function UserProfile() {
     setUserEmail(email);
   }, [navigate]);
 
-  // Filter and sort reviews when filter or sort option changes
+  // Filter and sort reviews when filter, sort option, or search query changes
   useEffect(() => {
     let result = [...reviews];
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(review => 
+        review.menuItem.toLowerCase().includes(query) ||
+        review.diningHall.toLowerCase().includes(query) ||
+        review.comment.toLowerCase().includes(query)
+      );
+    }
     
     // Apply dining hall filter
     if (diningHallFilter !== "all") {
@@ -183,7 +198,7 @@ export default function UserProfile() {
     });
     
     setFilteredReviews(result);
-  }, [reviews, diningHallFilter, sortOption]);
+  }, [reviews, diningHallFilter, sortOption, searchQuery]);
 
   // Fetch user reviews
   useEffect(() => {
@@ -331,6 +346,8 @@ export default function UserProfile() {
     );
   }
 
+  console.log("user profile filtered reviews", filteredReviews);
+
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -348,77 +365,86 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="flex justify-center py-10 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
-      <div className="w-full max-w-3xl px-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-10">
+      <div className="max-w-4xl mx-auto px-4">
         <UserProfileHeader userEmail={userEmail} />
         
-        <div className="bg-white p-8 rounded-lg shadow-lg">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-purple-800">Your Past Reviews</h2>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex flex-col gap-6 mb-8">
+            <h2 className="text-2xl font-semibold text-gray-800">Your Reviews</h2>
             
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <div className="relative">
+            {/* Search and Filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Search reviews..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div className="flex gap-4">
                 <select
                   value={diningHallFilter}
                   onChange={(e) => setDiningHallFilter(e.target.value)}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="all">All Dining Halls</option>
                   {uniqueDiningHalls.map((hall) => (
-                    <option key={hall} value={hall}>
-                      {hall}
-                    </option>
+                    <option key={hall} value={hall}>{hall}</option>
                   ))}
                 </select>
-              </div>
-              
-              <div className="flex rounded-md shadow-sm" role="group">
-                <button
-                  type="button"
-                  onClick={() => setSortOption("newest")}
-                  className={`px-4 py-2 text-sm font-medium rounded-l-md border ${
-                    sortOption === "newest"
-                      ? "bg-purple-100 text-purple-700 border-purple-200"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  Newest
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSortOption("oldest")}
-                  className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-b border-r ${
-                    sortOption === "oldest"
-                      ? "bg-purple-100 text-purple-700 border-purple-200"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  Oldest
-                </button>
+                
+                <div className="flex rounded-lg overflow-hidden border border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setSortOption("newest")}
+                    className={`px-4 py-2 text-sm font-medium ${
+                      sortOption === "newest"
+                        ? "bg-purple-600 text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Newest
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSortOption("oldest")}
+                    className={`px-4 py-2 text-sm font-medium ${
+                      sortOption === "oldest"
+                        ? "bg-purple-600 text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Oldest
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           {filteredReviews.length === 0 ? (
-            <p className="text-center text-gray-500 py-6">
-              {reviews.length === 0 
-                ? "You haven't submitted any reviews yet." 
-                : "No reviews match your filter criteria."}
-            </p>
+            <div className="text-center py-12">
+              <p className="text-gray-500">
+                {reviews.length === 0 
+                  ? "You haven't submitted any reviews yet." 
+                  : "No reviews match your search criteria."}
+              </p>
+            </div>
           ) : (
             <div className="space-y-6">
               {filteredReviews.map((review) => (
                 <div 
                   key={review.id} 
-                  className="bg-white border border-gray-100 rounded-lg shadow-sm p-5 transition-all hover:shadow-md"
+                  className="bg-white border border-gray-100 rounded-xl p-6 transition-all hover:shadow-md"
                 >
-                  <div className="flex flex-col space-y-2 mb-3">
+                  <div className="flex flex-col space-y-4">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium text-purple-900">{review.menuItem}</h3>
-                        <p className="text-sm text-gray-600">
-                          <span className="font-medium">Dining Hall:</span> {review.diningHall}
-                        </p>
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-medium text-gray-900">{review.menuItem}</h3>
+                        <p className="text-sm text-gray-600">{review.diningHall}</p>
                       </div>
                       
                       <div className="flex gap-2">
@@ -426,14 +452,14 @@ export default function UserProfile() {
                           <>
                             <button
                               onClick={() => handleSave(review.id)}
-                              className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-full transition-colors"
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                               title="Save"
                             >
                               <FaCheck />
                             </button>
                             <button
                               onClick={() => handleCancelEdit(review.id)}
-                              className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full transition-colors"
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                               title="Cancel"
                             >
                               <FaTimes />
@@ -443,14 +469,14 @@ export default function UserProfile() {
                           <>
                             <button
                               onClick={() => handleEditClick(review.id)}
-                              className="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-full transition-colors"
+                              className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Edit"
                             >
                               <FaEdit />
                             </button>
                             <button
                               onClick={() => handleDelete(review.id)}
-                              className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full transition-colors"
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                               title="Delete"
                             >
                               <FaTrash />
@@ -461,35 +487,35 @@ export default function UserProfile() {
                     </div>
                     
                     <div className="flex justify-between items-center">
-                      {editStates[review.id] ? (
+                      <div className="flex items-center gap-4">
                         <div>
                           <StarRating 
-                            rating={editedReviews[review.id]?.rating || 0} 
-                            editable={true}
+                            rating={editStates[review.id] ? editedReviews[review.id]?.rating : review.rating} 
+                            editable={editStates[review.id]}
                             onChange={(newRating) => handleFieldChange(review.id, "rating", newRating)}
                           />
                         </div>
-                      ) : (
-                        <div>
-                          <StarRating rating={review.rating} />
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">Your Rating:</span> {review.rating}/5
                         </div>
-                      )}
-                      <p className="text-xs text-gray-500">{formatDate(review.timestamp)}</p>
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">Average Rating:</span> {review.menuItem_avg_rating?.toFixed(1) || 'N/A'}/5
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-500">{formatDate(review.timestamp)}</p>
                     </div>
-                  </div>
 
-                  {editStates[review.id] ? (
-                    <div className="mt-3">
+                    {editStates[review.id] ? (
                       <textarea
                         value={editedReviews[review.id]?.comment || ""}
                         onChange={(e) => handleFieldChange(review.id, "comment", e.target.value)}
                         placeholder="Your review"
-                        className="w-full p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[100px] text-gray-700"
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[100px] text-gray-700"
                       />
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-gray-700">{review.comment}</p>
-                  )}
+                    ) : (
+                      <p className="text-gray-700">{review.comment}</p>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

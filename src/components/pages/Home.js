@@ -50,6 +50,8 @@ export default function Home() {
         // Fetch all items using the search endpoint with no filters
         const response = await fetch(`${API_URL}/searchServlet`);
         const data = await response.json();
+
+        console.log("home data", data);
         
         // Sort by rating and take top 4
         const items = Array.isArray(data) ? data : [data];
@@ -59,6 +61,8 @@ export default function Home() {
           .slice(0, 4);
         
         setTopItems(sortedItems);
+
+        console.log("home sorted items", sortedItems);
       } catch (error) {
         console.error("Failed to fetch top items:", error);
         // Fallback sample data if fetch fails

@@ -406,9 +406,9 @@ export default function Searchitem() {
             </div>
           ) : results.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedResults.map((item, i) => (
+              {sortedResults.map((item) => (
                 <Link
-                  key={i}
+                  key={item.foodItem.food_id}
                   to={`/menu-item/${encodeURIComponent(item.foodItem.food_id)}`}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-purple-200 transition-all overflow-hidden flex flex-col"
                 >
