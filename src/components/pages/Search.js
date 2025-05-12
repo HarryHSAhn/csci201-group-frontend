@@ -216,6 +216,8 @@ export default function Searchitem() {
     }
   }, [results]);
 
+  console.log("sorted results", sortedResults);
+
   const handleSearchInput = (e) => {
     setSearchText(e.target.value);
   };

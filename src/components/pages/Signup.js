@@ -28,6 +28,11 @@ export default function Signup() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
+  const isValidUSCEmail = (email) => {
+    const uscEmailRegex = /^[a-zA-Z0-9._%+-]+@usc\.edu$/;
+    return uscEmailRegex.test(email);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -38,6 +43,12 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate USC email
+    if (!isValidUSCEmail(formData.email)) {
+      setError("Please use a valid USC email address (@usc.edu)");
+      return;
+    }
     
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
