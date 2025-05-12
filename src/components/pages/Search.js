@@ -6,15 +6,24 @@ import { FaStar, FaRegStar, FaSearch, FaFilter, FaSort, FaSortAmountDown, FaSort
 const StarRating = ({ rating }) => {
   return (
     <div className="flex">
-      {[...Array(5)].map((_, index) => (
-        <span key={index} className="text-sm">
-          {index + 1 <= rating ? (
-            <FaStar className="text-yellow-400" />
-          ) : (
+      {[...Array(5)].map((_, index) => {
+        const starValue = index + 1;
+        const fillPercentage = Math.max(0, Math.min(100, (rating - index) * 100));
+        
+        return (
+          <span key={index} className="text-sm relative">
             <FaRegStar className="text-yellow-400" />
-          )}
-        </span>
-      ))}
+            {fillPercentage > 0 && (
+              <div 
+                className="absolute top-0 left-0 overflow-hidden" 
+                style={{ width: `${fillPercentage}%` }}
+              >
+                <FaStar className="text-yellow-400" />
+              </div>
+            )}
+          </span>
+        );
+      })}
     </div>
   );
 };
@@ -420,18 +429,15 @@ export default function Searchitem() {
                         <h3 className="font-medium text-gray-900 text-lg mb-1">{item.foodItem.name}</h3>
                         <p className="text-sm text-gray-600 mb-2">{item.foodItem.diningHall}</p>
                       </div>
-                      {item.review && (
-                        <div className="flex items-center bg-[#990000]/10 px-2 py-1 rounded text-sm">
-                          <FaStar className="text-[#FFCC00] mr-1" />
-                          <span className="text-gray-800 font-medium">{item.review.numericalRating.toFixed(1)}</span>
-                        </div>
-                      )}
                     </div>
                     
                     {/* Star Rating */}
                     {item.review ? (
-                      <div className="mt-2">
-                        <StarRating rating={Math.round(item.review.numericalRating)} />
+                      <div className="mt-2 flex items-center gap-2">
+                        <StarRating rating={item.review.numericalRating} />
+                        <span className="text-sm text-gray-600">
+                          {item.review.numericalRating.toFixed(1)} ({item.review.reviewCount || 1} {item.review.reviewCount === 1 ? 'review' : 'reviews'})
+                        </span>
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500 italic mt-2">No reviews yet</p>

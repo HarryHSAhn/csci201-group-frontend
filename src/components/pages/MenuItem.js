@@ -10,15 +10,24 @@ const API_URL = "http://localhost:8080/CSCI201Project";
 const StarRating = ({ rating }) => {
   return (
     <div className="flex">
-      {[...Array(5)].map((_, index) => (
-        <span key={index} className="text-xl">
-          {index + 1 <= rating ? (
-            <FaStar className="text-yellow-400" />
-          ) : (
+      {[...Array(5)].map((_, index) => {
+        const starValue = index + 1;
+        const fillPercentage = Math.max(0, Math.min(100, (rating - index) * 100));
+        
+        return (
+          <span key={index} className="text-xl relative">
             <FaRegStar className="text-yellow-400" />
-          )}
-        </span>
-      ))}
+            {fillPercentage > 0 && (
+              <div 
+                className="absolute top-0 left-0 overflow-hidden" 
+                style={{ width: `${fillPercentage}%` }}
+              >
+                <FaStar className="text-yellow-400" />
+              </div>
+            )}
+          </span>
+        );
+      })}
     </div>
   );
 };
@@ -266,7 +275,7 @@ export default function MenuItem() {
                 </h1>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
-                    <StarRating rating={Math.round(menuItem.averageRating)} />
+                    <StarRating rating={menuItem.averageRating} />
                     <span className="ml-2 text-lg font-medium text-gray-900">
                       {menuItem.averageRating.toFixed(1)}
                     </span>
@@ -295,12 +304,6 @@ export default function MenuItem() {
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Description Section */}
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">About this dish</h2>
-            <p className="text-gray-700">{menuItem.description}</p>
           </div>
 
           {/* Reviews Section */}
